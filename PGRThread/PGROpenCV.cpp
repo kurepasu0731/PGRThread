@@ -180,7 +180,7 @@ int TPGROpenCV::start()
 			return -1;
 		}
 		else {
-			fc2Mat->create(wk.GetRows(), wk.GetCols(), PixelFormatInOpenCV());
+			fc2Mat.create(wk.GetRows(), wk.GetCols(), PixelFormatInOpenCV());
 			//fc2Mat = boost::shared_ptr<cv::Mat>(new cv::Mat);
 		}
 		return 0;
@@ -208,7 +208,7 @@ int TPGROpenCV::queryFrame()
 		return -1;
 	}
 	// copy (0~1ms)
-	memcpy(fc2Mat->data, cvtImage.GetData(), cvtImage.GetDataSize());
+	memcpy(fc2Mat.data, cvtImage.GetData(), cvtImage.GetDataSize());
 
 	return 0;
 }
@@ -233,7 +233,7 @@ int TPGROpenCV::stop()
 int TPGROpenCV::release()
 {
 	boost::unique_lock<boost::mutex> lock(mutex);
-	fc2Mat->release();
+	fc2Mat.release();
 	lock.unlock();
 
 	fc2Error = fc2Cam.Disconnect();

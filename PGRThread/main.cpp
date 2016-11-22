@@ -192,7 +192,7 @@ int main( int argc, char* argv[] )
 		//{
 		//	pgrOpenCV.showCapImg(detectCorner(img));
 		//}
-		//pgrOpenCV.showCapImg(*critical_section->getImage());
+		pgrOpenCV.showCapImg(critical_section->getImage());
 		//pgrOpenCV.showCapImg(pgrOpenCV.getVideo());
 
 		pgrOpenCV.tm.elapsed();
