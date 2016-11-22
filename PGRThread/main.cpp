@@ -170,7 +170,7 @@ int main( int argc, char* argv[] )
 	cv::Mat cap;
 
 	// initialization
-	pgrOpenCV.init(FlyCapture2::PIXEL_FORMAT_MONO8, FlyCapture2::NEAREST_NEIGHBOR);
+	pgrOpenCV.init(FlyCapture2::PIXEL_FORMAT_MONO8, FlyCapture2:::HQ_LINEAR);
 	// start capturing
 	pgrOpenCV.start();
 	for( ;; ) {

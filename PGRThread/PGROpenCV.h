@@ -12,6 +12,9 @@
 #include <iostream>
 #include "Timer.h"
 
+#include <thread>
+#include <mutex>
+
 class TPGROpenCV
 {
 private:
@@ -76,6 +79,16 @@ public:
 	cv::Mat getVideo(){ return fc2Mat; };
 
 	Timer tm;
+
+protected:
+	std::thread thread;
+	mutable std::mutex mutex;
+
+	void threadFunction();
+
+	bool quit;
+	bool running;
+
 };
 
 #endif

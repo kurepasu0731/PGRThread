@@ -13,7 +13,7 @@ TPGROpenCV::TPGROpenCV(int _useCameraIndex)
 // Destructor
 TPGROpenCV::~TPGROpenCV()
 {
-
+	thread.join();
 }
 
 // initialize PGR
@@ -105,6 +105,19 @@ void TPGROpenCV::PrintCameraInfo(FlyCapture2::CameraInfo* pCamInfo)
 		<< "Firmware build time - " << pCamInfo->firmwareBuildTime << std::endl << std::endl;
 }
 
+
+
+//スレッド処理
+void TPGROpenCV::threadFunction()
+{
+	while(!quit)
+	{
+		std::unique_lock<std::mutex> lock(mutex);
+		queryFrame();
+		lock.unlock();
+	}
+}
+
 // reply present pixel format in OpenCV style
 int TPGROpenCV::PixelFormatInOpenCV()
 {
@@ -143,6 +156,13 @@ int TPGROpenCV::PixelFormatInOpenCV()
 int TPGROpenCV::start()
 {
 	fc2Error = fc2Cam.StartCapture();
+
+	quit = false;
+	running = true;
+
+	//スレッド生成
+	thread = std::thread( &threadFunction, this);
+
 	if (fc2Error != FlyCapture2::PGRERROR_OK) {
 		PrintError(fc2Error);
 		return -1;
@@ -191,6 +211,11 @@ int TPGROpenCV::queryFrame()
 int TPGROpenCV::stop()
 {
 	fc2Error = fc2Cam.StopCapture();
+	std::unique_lock<std::mutex> lock(mutex);
+	quit = true;
+	running = false;
+	lock.unlock();
+
 	if (fc2Error != FlyCapture2::PGRERROR_OK) {
 		PrintError(fc2Error);
 		return -1;
