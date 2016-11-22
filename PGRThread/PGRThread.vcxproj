@@ -56,21 +56,25 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="Flycapture2.props" />
     <Import Project="OpenCV_2.4.9.props" />
+    <Import Project="PCL.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="Flycapture2.props" />
     <Import Project="OpenCV_2.4.9.props" />
+    <Import Project="PCL.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="Flycapture2.props" />
     <Import Project="OpenCV_2.4.9.props" />
+    <Import Project="PCL.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="Flycapture2.props" />
     <Import Project="OpenCV_2.4.9.props" />
+    <Import Project="PCL.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
@@ -127,6 +131,7 @@
     <ClCompile Include="PGROpenCV.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="criticalSection.h" />
     <ClInclude Include="PGROpenCV.h" />
     <ClInclude Include="Timer.h" />
   </ItemGroup>

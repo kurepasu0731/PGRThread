@@ -3,6 +3,8 @@
 #include <iostream>
 #include <cstdio>
 
+
+//#include "criticalSection.h"
 #include "PGROpenCV.h"
 
 #define CAMERA_WIDTH 2448
@@ -12,6 +14,7 @@
 #define A_THRESH_VAL -5
 #define DOT_THRESH_VAL_MIN 100  // ドットノイズ弾き
 #define DOT_THRESH_VAL_MAX 500 // エッジノイズ弾き
+
 
 void calCoG_dot_v0(cv::Mat &src, cv::Point& sum, int& cnt, cv::Point& min, cv::Point& max, cv::Point p) 
 {
@@ -124,10 +127,11 @@ std::vector<cv::Point2f> corners;
 //コーナー点を検出(srcはモノクロ)
 cv::Mat detectCorner(const cv::Mat &src)
 {
+
 	//コーナー検出
 	cv::goodFeaturesToTrack(src, corners, 100, 0.01, 50);
 	//高精度化
-	cv::cornerSubPix(src, corners, cv::Size(11, 11), cv::Size(-1, -1), cv::TermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.03));
+	//cv::cornerSubPix(src, corners, cv::Size(11, 11), cv::Size(-1, -1), cv::TermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.03));
 
 
 
@@ -169,17 +173,27 @@ int main( int argc, char* argv[] )
 	TPGROpenCV	pgrOpenCV(0);
 	cv::Mat cap;
 
+	//! スレッド間の共有クラス
+	boost::shared_ptr<criticalSection> critical_section = boost::shared_ptr<criticalSection> (new criticalSection);
+
 	// initialization
-	pgrOpenCV.init(FlyCapture2::PIXEL_FORMAT_MONO8, FlyCapture2:::HQ_LINEAR);
-	// start capturing
+	pgrOpenCV.init(FlyCapture2::PIXEL_FORMAT_MONO8, FlyCapture2::HQ_LINEAR);
+	// start capturing thread
 	pgrOpenCV.start();
+
+	int time = 0;
+
 	for( ;; ) {
 		pgrOpenCV.tm.restart();
 
-		pgrOpenCV.queryFrame();
-
-		//コーナー点を検出
-		pgrOpenCV.showCapImg(detectCorner(pgrOpenCV.getVideo()));
+		////コーナー点を検出
+		//cv::Mat img = pgrOpenCV.getVideo();
+		//if(img.data != NULL)
+		//{
+		//	pgrOpenCV.showCapImg(detectCorner(img));
+		//}
+		//pgrOpenCV.showCapImg(*critical_section->getImage());
+		//pgrOpenCV.showCapImg(pgrOpenCV.getVideo());
 
 		pgrOpenCV.tm.elapsed();
 		//適応的閾値処理と普通の二値化の比較

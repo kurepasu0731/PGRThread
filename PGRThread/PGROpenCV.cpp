@@ -65,6 +65,9 @@ int TPGROpenCV::init(FlyCapture2::PixelFormat _format, int ColorProcessingAlgori
 
 	fc2Cam.GetProperty(&fc2Prop);
 
+	// スレッド間共有クラス
+	critical_section = boost::shared_ptr<criticalSection> (new criticalSection);
+
 	return 0;
 }
 
@@ -112,8 +115,9 @@ void TPGROpenCV::threadFunction()
 {
 	while(!quit)
 	{
-		std::unique_lock<std::mutex> lock(mutex);
+		boost::unique_lock<boost::mutex> lock(mutex);
 		queryFrame();
+		critical_section->setImage(fc2Mat);
 		lock.unlock();
 	}
 }
@@ -161,7 +165,7 @@ int TPGROpenCV::start()
 	running = true;
 
 	//スレッド生成
-	thread = std::thread( &threadFunction, this);
+	thread = boost::thread( &TPGROpenCV::threadFunction, this);
 
 	if (fc2Error != FlyCapture2::PGRERROR_OK) {
 		PrintError(fc2Error);
@@ -176,7 +180,8 @@ int TPGROpenCV::start()
 			return -1;
 		}
 		else {
-			fc2Mat.create(wk.GetRows(), wk.GetCols(), PixelFormatInOpenCV());
+			fc2Mat->create(wk.GetRows(), wk.GetCols(), PixelFormatInOpenCV());
+			//fc2Mat = boost::shared_ptr<cv::Mat>(new cv::Mat);
 		}
 		return 0;
 	}
@@ -203,7 +208,7 @@ int TPGROpenCV::queryFrame()
 		return -1;
 	}
 	// copy (0~1ms)
-	memcpy(fc2Mat.data, cvtImage.GetData(), cvtImage.GetDataSize());
+	memcpy(fc2Mat->data, cvtImage.GetData(), cvtImage.GetDataSize());
 
 	return 0;
 }
@@ -211,7 +216,7 @@ int TPGROpenCV::queryFrame()
 int TPGROpenCV::stop()
 {
 	fc2Error = fc2Cam.StopCapture();
-	std::unique_lock<std::mutex> lock(mutex);
+	boost::unique_lock<boost::mutex> lock(mutex);
 	quit = true;
 	running = false;
 	lock.unlock();
@@ -227,7 +232,9 @@ int TPGROpenCV::stop()
 
 int TPGROpenCV::release()
 {
-	fc2Mat.release();
+	boost::unique_lock<boost::mutex> lock(mutex);
+	fc2Mat->release();
+	lock.unlock();
 
 	fc2Error = fc2Cam.Disconnect();
 	if (fc2Error != FlyCapture2::PGRERROR_OK) {
@@ -364,8 +371,12 @@ void TPGROpenCV::showCapImg(cv::Mat cap)
 	//if (cap.data == NULL)
 	//	cap = getVideo();
 	//cv::resize(cap, cap, cv::Size(), 0.8, 0.8);
-	cv::imshow(windowNameCamera, cap);
-	cv::waitKey(1);
+
+	if(cap.data != NULL)
+	{
+		cv::imshow(windowNameCamera, cap);
+		cv::waitKey(1);
+	}
 
 }
 

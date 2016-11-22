@@ -12,8 +12,41 @@
 #include <iostream>
 #include "Timer.h"
 
-#include <thread>
-#include <mutex>
+#include <boost/thread/thread.hpp>
+
+//#include "criticalSection.h"
+
+class criticalSection
+{
+public:
+	criticalSection()
+	{
+		image = boost::shared_ptr<cv::Mat>(new cv::Mat);
+	}
+
+	~criticalSection(){};
+
+	inline boost::shared_ptr<cv::Mat> getImage()
+	{
+		boost::shared_lock<boost::shared_mutex> read_lock(image_mutex);
+		return image;
+	}
+
+	inline void setImage(const boost::shared_ptr<cv::Mat> &img)
+	{
+		boost::upgrade_lock<boost::shared_mutex> up_lock(image_mutex);
+		boost::upgrade_to_unique_lock<boost::shared_mutex> write_lock(up_lock);
+		*image = img->clone();
+	}
+
+
+private:
+	boost::shared_mutex image_mutex;
+
+	boost::shared_ptr<cv::Mat> image;
+
+};
+
 
 class TPGROpenCV
 {
@@ -38,7 +71,7 @@ private:
 	float						Framerate;
 	unsigned int				Wb_Red;
 	unsigned int				Wb_Blue;
-	cv::Mat						fc2Mat;
+	boost::shared_ptr<cv::Mat>	fc2Mat;
 
 	float						delay;
 	
@@ -76,18 +109,22 @@ public:
 	void showCapImg(cv::Mat cap = cv::Mat());	//ŽB‰e‰æ‘œ‚ð•\Ž¦
 	void CameraCapture(cv::Mat &image);			// ŽB‰e‰æ‘œ‚ðMat‚ÅŽæ“¾
 
-	cv::Mat getVideo(){ return fc2Mat; };
+	//cv::Mat getVideo(){ return fc2Mat; };
 
 	Timer tm;
 
 protected:
-	std::thread thread;
-	mutable std::mutex mutex;
+	boost::thread thread;
+	mutable boost::mutex mutex;
 
 	void threadFunction();
 
 	bool quit;
 	bool running;
+
+	//! ƒXƒŒƒbƒhŠÔ‚Ì‹¤—LƒNƒ‰ƒX
+	boost::shared_ptr<criticalSection> critical_section;
+
 
 };
 
